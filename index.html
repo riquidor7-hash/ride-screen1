@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RideWith — Passenger Display</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080a0f;
+    --surface: #10131a;
+    --card: #161b24;
+    --border: rgba(255,255,255,0.07);
+    --accent: #00e5a0;
+    --blue: #00b4ff;
+    --gold: #f5c518;
+    --purple: #9b72cf;
+    --danger: #ff5f5f;
+    --text: #eef0f7;
+    --muted: #6b7490;
+    --radius: 20px;
+    --radius-sm: 12px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { height:100%; }
+  body {
+    font-family:'DM Sans',sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+
+/* BG */
+.bg-mesh {
+position:fixed; inset:0; z-index:0; pointer-events:none;
+background:
+radial-gradient(ellipse 70% 50% at 10% 10%, rgba(0,229,160,0.06) 0%, transparent 55%),
+radial-gradient(ellipse 60% 60% at 85% 80%, rgba(155,114,207,0.07) 0%, transparent 55%),
+radial-gradient(ellipse 50% 40% at 50% 50%, rgba(0,180,255,0.04) 0%, transparent 50%);
+}
+
+.wrap { position:relative; z-index:1; max-width:860px; margin:0 auto; padding:16px 14px 40px; }
+
+/* HEADER */
+.header {
+display:flex; align-items:center; justify-content:space-between;
+background:var(–surface); border:1px solid var(–border);
+border-radius:var(–radius); padding:16px 22px; margin-bottom:14px;
+animation:fadeUp .5s ease both;
+}
+.logo {
+font-family:‘Syne’,sans-serif; font-size:21px; font-weight:800;
+background:linear-gradient(120deg,var(–accent),var(–blue));
+-webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+.tagline { font-size:11px; color:var(–muted); font-weight:300; margin-top:1px; }
+.header-right { display:flex; align-items:center; gap:14px; }
+.live-pill {
+display:flex; align-items:center; gap:6px;
+background:rgba(0,229,160,0.08); border:1px solid rgba(0,229,160,0.2);
+border-radius:20px; padding:5px 12px; font-size:11px; color:var(–accent); font-weight:600;
+}
+.pulse { width:6px; height:6px; border-radius:50%; background:var(–accent); animation:pulse 1.5s infinite; }
+.clock { font-family:‘Syne’,sans-serif; font-size:19px; font-weight:700; }
+
+/* TABS */
+.tabs { display:flex; gap:8px; margin-bottom:14px; animation:fadeUp .5s .08s ease both; }
+.tab {
+flex:1; padding:13px 6px; border:1px solid var(–border); background:var(–surface);
+color:var(–muted); border-radius:var(–radius-sm); cursor:pointer;
+font-family:‘Syne’,sans-serif; font-size:12px; font-weight:700;
+letter-spacing:.4px; transition:all .22s; text-align:center; line-height:1.3;
+}
+.tab .tab-icon { display:block; font-size:18px; margin-bottom:3px; }
+.tab.active { background:var(–accent); color:#000; border-color:var(–accent); box-shadow:0 0 22px rgba(0,229,160,.22); }
+.tab:hover:not(.active) { border-color:var(–accent); color:var(–accent); }
+
+/* PANELS */
+.panel { display:none; }
+.panel.active { display:block; animation:fadeUp .32s ease both; }
+
+/* SECTION LABEL */
+.sec { font-family:‘Syne’,sans-serif; font-size:10px; font-weight:700; letter-spacing:2.5px; color:var(–muted); text-transform:uppercase; margin-bottom:10px; padding-left:2px; }
+
+/* CARD */
+.card { background:var(–card); border:1px solid var(–border); border-radius:var(–radius); padding:20px; margin-bottom:12px; }
+
+/* ── DRIVER TAB ── */
+.driver-hero {
+display:flex; align-items:center; gap:18px;
+background:var(–card); border:1px solid var(–border); border-radius:var(–radius); padding:20px; margin-bottom:12px;
+}
+.avatar {
+width:76px; height:76px; border-radius:50%; flex-shrink:0;
+background:linear-gradient(135deg,#1a3a5c,#0f2a40);
+border:3px solid rgba(0,229,160,.3);
+display:flex; align-items:center; justify-content:center;
+font-family:‘Syne’,sans-serif; font-size:30px; font-weight:800; color:var(–accent);
+}
+.d-name { font-family:‘Syne’,sans-serif; font-size:22px; font-weight:800; }
+.d-meta { display:flex; flex-wrap:wrap; gap:12px; margin-top:6px; }
+.d-meta-item { display:flex; align-items:center; gap:5px; font-size:12px; color:var(–muted); }
+.stars { color:var(–gold); letter-spacing:1px; }
+.badge {
+display:inline-flex; align-items:center; gap:5px;
+background:rgba(0,229,160,.1); border:1px solid rgba(0,229,160,.25);
+color:var(–accent); border-radius:20px; padding:4px 12px;
+font-size:11px; font-weight:700; letter-spacing:.5px; margin-top:8px;
+}
+
+.amenities { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+.amen {
+display:flex; align-items:center; gap:7px;
+background:var(–surface); border:1px solid var(–border);
+border-radius:30px; padding:7px 13px; font-size:12px; color:var(–muted);
+}
+.amen span { font-size:15px; }
+
+.wifi-box {
+background:linear-gradient(135deg,rgba(0,180,255,.07),rgba(155,114,207,.06));
+border:1px solid rgba(0,180,255,.18); border-radius:var(–radius); padding:18px; margin-bottom:12px;
+}
+.wifi-title { font-family:‘Syne’,sans-serif; font-size:13px; font-weight:700; color:var(–blue); margin-bottom:10px; }
+.wifi-row {
+display:flex; justify-content:space-between; align-items:center;
+background:var(–surface); border:1px solid var(–border); border-radius:var(–radius-sm);
+padding:9px 14px; margin-bottom:7px;
+}
+.wifi-lbl { font-size:11px; color:var(–muted); }
+.wifi-val { font-family:‘Syne’,sans-serif; font-size:14px; font-weight:700; letter-spacing:1.5px; }
+
+/* ── RULES TAB ── */
+.rules-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.rule {
+background:var(–surface); border:1px solid var(–border);
+border-radius:var(–radius-sm); padding:14px 13px;
+display:flex; align-items:flex-start; gap:11px;
+}
+.rule-ico {
+width:36px; height:36px; border-radius:10px; flex-shrink:0;
+display:flex; align-items:center; justify-content:center; font-size:17px;
+}
+.ico-g { background:rgba(0,229,160,.1); }
+.ico-r { background:rgba(255,95,95,.1); }
+.ico-b { background:rgba(0,180,255,.1); }
+.ico-y { background:rgba(245,197,24,.1); }
+.rule-t { font-family:‘Syne’,sans-serif; font-size:12px; font-weight:700; }
+.rule-d { font-size:11px; color:var(–muted); margin-top:3px; line-height:1.5; }
+
+.thank-box {
+background:linear-gradient(135deg,rgba(0,229,160,.07),rgba(0,180,255,.05));
+border:1px solid rgba(0,229,160,.15); border-radius:var(–radius);
+padding:20px; text-align:center; margin-top:10px;
+}
+.thank-box .big { font-size:28px; margin-bottom:6px; }
+.thank-box h3 { font-family:‘Syne’,sans-serif; font-size:15px; font-weight:800; color:var(–accent); }
+.thank-box p { font-size:12px; color:var(–muted); margin-top:5px; line-height:1.6; }
+
+/* ── TIP TAB ── */
+.tip-hero {
+background:linear-gradient(135deg,rgba(245,197,24,.09),rgba(0,229,160,.05));
+border:1px solid rgba(245,197,24,.22); border-radius:var(–radius);
+padding:26px; text-align:center; margin-bottom:12px;
+}
+.tip-emoji { font-size:44px; margin-bottom:10px; }
+.tip-title { font-family:‘Syne’,sans-serif; font-size:20px; font-weight:800; color:var(–gold); margin-bottom:8px; }
+.tip-sub { font-size:13px; color:var(–muted); line-height:1.65; max-width:360px; margin:0 auto 20px; }
+.tip-btns { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:14px; }
+.tip-btn {
+background:rgba(245,197,24,.12); border:1px solid rgba(245,197,24,.3); color:var(–gold);
+border-radius:30px; padding:11px 24px; font-family:‘Syne’,sans-serif; font-size:15px; font-weight:700;
+cursor:pointer; transition:all .2s;
+}
+.tip-btn:hover, .tip-btn.sel { background:var(–gold); color:#000; box-shadow:0 0 18px rgba(245,197,24,.3); }
+.tip-custom { display:flex; gap:8px; justify-content:center; align-items:center; }
+.tip-inp {
+background:var(–surface); border:1px solid var(–border); color:var(–text);
+border-radius:10px; padding:10px 14px; font-size:14px; width:120px;
+font-family:‘DM Sans’,sans-serif; outline:none; transition:border-color .2s;
+}
+.tip-inp:focus { border-color:var(–gold); }
+.tip-go {
+background:var(–gold); color:#000; border:none; border-radius:10px;
+padding:10px 18px; font-family:‘Syne’,sans-serif; font-size:14px; font-weight:700;
+cursor:pointer; transition:opacity .2s;
+}
+.tip-go:hover { opacity:.85; }
+.tip-thanks { font-family:‘Syne’,sans-serif; font-size:15px; color:var(–accent); font-weight:700; margin-top:14px; display:none; }
+
+.stars-row { display:flex; justify-content:center; gap:8px; font-size:38px; cursor:pointer; margin:12px 0 8px; }
+.s-star { transition:transform .15s; color:var(–muted); }
+.s-star.on { color:var(–gold); }
+.s-star:hover { transform:scale(1.15); }
+.rating-lbl { font-size:13px; color:var(–muted); text-align:center; }
+
+/* ── QUIZ TAB ── */
+.quiz-wrap { }
+
+/* SETUP SCREEN */
+.quiz-setup { }
+.quiz-setup h2 { font-family:‘Syne’,sans-serif; font-size:20px; font-weight:800; margin-bottom:6px; }
+.quiz-setup p { font-size:13px; color:var(–muted); margin-bottom:18px; }
+
+.pick-label { font-family:‘Syne’,sans-serif; font-size:11px; font-weight:700; letter-spacing:2px; color:var(–muted); text-transform:uppercase; margin-bottom:10px; }
+.cat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:18px; }
+.cat-btn {
+background:var(–surface); border:1.5px solid var(–border); border-radius:var(–radius-sm);
+padding:12px 8px; text-align:center; cursor:pointer; transition:all .2s;
+font-size:12px; color:var(–muted); font-weight:500;
+}
+.cat-btn .cat-ico { font-size:22px; display:block; margin-bottom:4px; }
+.cat-btn.sel { background:rgba(155,114,207,.12); border-color:var(–purple); color:#c4a0f0; }
+.cat-btn:hover:not(.sel) { border-color:var(–purple); color:var(–purple); }
+
+.diff-row { display:flex; gap:8px; margin-bottom:22px; }
+.diff-btn {
+flex:1; padding:11px 8px; background:var(–surface); border:1.5px solid var(–border);
+border-radius:var(–radius-sm); font-family:‘Syne’,sans-serif; font-size:12px; font-weight:700;
+color:var(–muted); cursor:pointer; transition:all .2s; text-align:center;
+}
+.diff-btn.sel { background:rgba(0,229,160,.1); border-color:var(–accent); color:var(–accent); }
+.diff-btn:hover:not(.sel) { border-color:var(–accent); color:var(–accent); }
+
+.start-btn {
+width:100%; padding:15px; background:linear-gradient(120deg,var(–accent),var(–blue));
+color:#000; border:none; border-radius:var(–radius-sm);
+font-family:‘Syne’,sans-serif; font-size:16px; font-weight:800;
+cursor:pointer; transition:opacity .2s; letter-spacing:.3px;
+}
+.start-btn:hover { opacity:.88; }
+.start-btn:disabled { opacity:.4; cursor:default; }
+
+/* GAME SCREEN */
+.quiz-game { display:none; }
+.quiz-game.active { display:block; }
+
+.quiz-meta {
+display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;
+}
+.qm-cat {
+display:flex; align-items:center; gap:7px;
+background:rgba(155,114,207,.12); border:1px solid rgba(155,114,207,.3);
+border-radius:20px; padding:5px 13px; font-size:11px; color:#c4a0f0; font-weight:700; letter-spacing:.5px;
+}
+.qm-score { font-family:‘Syne’,sans-serif; font-size:13px; font-weight:700; color:var(–muted); }
+.qm-score span { color:var(–accent); font-size:20px; }
+
+.q-card {
+background:var(–card); border:1px solid var(–border); border-radius:var(–radius); padding:24px; margin-bottom:12px;
+}
+.q-num { font-size:11px; color:var(–muted); font-weight:500; margin-bottom:10px; }
+.q-text { font-family:‘Syne’,sans-serif; font-size:17px; font-weight:700; line-height:1.45; margin-bottom:20px; }
+
+.opts { display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-bottom:14px; }
+.opt {
+background:var(–surface); border:1.5px solid var(–border); border-radius:var(–radius-sm);
+padding:13px 11px; font-size:13px; font-weight:500; cursor:pointer; transition:all .18s;
+color:var(–text); text-align:left; line-height:1.4;
+}
+.opt:hover:not(:disabled) { border-color:var(–purple); color:#c4a0f0; background:rgba(155,114,207,.08); }
+.opt.correct { background:rgba(0,229,160,.12); border-color:var(–accent); color:var(–accent); }
+.opt.wrong   { background:rgba(255,95,95,.1);  border-color:var(–danger); color:var(–danger); }
+.opt:disabled { cursor:default; }
+
+.q-feedback { font-size:13px; color:var(–muted); font-style:italic; min-height:20px; margin-bottom:14px; line-height:1.5; }
+.q-feedback.good { color:var(–accent); font-style:normal; font-weight:500; }
+.q-feedback.bad  { color:var(–danger); font-style:normal; font-weight:500; }
+
+.q-actions { display:flex; justify-content:space-between; align-items:center; }
+.q-next {
+background:rgba(155,114,207,.15); border:1px solid rgba(155,114,207,.3); color:#c4a0f0;
+border-radius:10px; padding:10px 22px; font-family:‘Syne’,sans-serif; font-size:13px; font-weight:700;
+cursor:pointer; transition:all .2s;
+}
+.q-next:hover { background:var(–purple); color:#fff; }
+.q-reset {
+font-size:12px; color:var(–muted); cursor:pointer; text-decoration:underline; background:none; border:none;
+font-family:‘DM Sans’,sans-serif;
+}
+.q-reset:hover { color:var(–text); }
+
+.loading-box {
+text-align:center; padding:30px 20px;
+}
+.loading-box .spin {
+width:36px; height:36px; border:3px solid var(–border); border-top-color:var(–accent);
+border-radius:50%; margin:0 auto 14px; animation:spin .8s linear infinite;
+}
+.loading-box p { font-size:13px; color:var(–muted); }
+
+/* ANIMATIONS */
+@keyframes fadeUp {
+from { opacity:0; transform:translateY(14px); }
+to   { opacity:1; transform:translateY(0); }
+}
+@keyframes pulse {
+0%,100% { opacity:1; transform:scale(1); }
+50%      { opacity:.4; transform:scale(1.5); }
+}
+@keyframes spin {
+to { transform:rotate(360deg); }
+}
+
+::-webkit-scrollbar { width:5px; }
+::-webkit-scrollbar-thumb { background:var(–border); border-radius:3px; }
+
+@media(max-width:500px) {
+.rules-grid { grid-template-columns:1fr; }
+.opts { grid-template-columns:1fr; }
+.cat-grid { grid-template-columns:repeat(2,1fr); }
+.driver-hero { flex-direction:column; text-align:center; }
+.d-meta { justify-content:center; }
+}
+</style>
+
+</head>
+<body>
+<div class="bg-mesh"></div>
+<div class="wrap">
+
+  <!-- HEADER -->
+
+  <div class="header">
+    <div>
+      <div class="logo">RideWith</div>
+      <div class="tagline">Your comfort, our priority</div>
+    </div>
+    <div class="header-right">
+      <div class="live-pill"><div class="pulse"></div>Active</div>
+      <div class="clock" id="clock">--:--</div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('driver',this)"><span class="tab-icon">🧑‍✈️</span>Driver</div>
+    <div class="tab" onclick="showTab('rules',this)"><span class="tab-icon">📋</span>Rules</div>
+    <div class="tab" onclick="showTab('quiz',this)"><span class="tab-icon">🎮</span>Quiz</div>
+    <div class="tab" onclick="showTab('tip',this)"><span class="tab-icon">🤝</span>Appreciate</div>
+  </div>
+
+  <!-- ════════════ DRIVER ════════════ -->
+
+  <div class="panel active" id="panel-driver">
+    <div class="sec">Your Driver</div>
+    <div class="driver-hero">
+      <div class="avatar">J</div>
+      <div>
+        <div class="d-name">Jean-Michel</div>
+        <div class="d-meta">
+          <div class="d-meta-item"><span class="stars">★★★★★</span>&nbsp;4.97</div>
+          <div class="d-meta-item">🚗 Toyota Camry · Silver</div>
+          <div class="d-meta-item">🛡️ Background Verified</div>
+          <div class="d-meta-item">🕐 6 yrs experience</div>
+        </div>
+        <div class="badge">🏆 Top Rated Driver</div>
+      </div>
+    </div>
+
+```
+<div class="sec">Amenities On Board</div>
+<div class="amenities">
+  <div class="amen"><span>📶</span> Free WiFi</div>
+  <div class="amen"><span>🎵</span> Music</div>
+  <div class="amen"><span>❄️</span> A/C</div>
+  <div class="amen"><span>🔌</span> Charging Port</div>
+  <div class="amen"><span>💧</span> Water Available</div>
+  <div class="amen"><span>🌸</span> Fresh Scent</div>
+</div>
+
+<div class="wifi-box">
+  <div class="wifi-title">📶 In-Car WiFi Access</div>
+  <div class="wifi-row">
+    <div class="wifi-lbl">Network</div>
+    <div class="wifi-val">RideWith_JM</div>
+  </div>
+  <div class="wifi-row" style="margin-bottom:0">
+    <div class="wifi-lbl">Password</div>
+    <div class="wifi-val">RIDE2024</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="sec">A Word From Your Driver</div>
+  <div style="font-size:14px;color:var(--muted);line-height:1.75;">
+    Hey! I'm Jean-Michel. I've been driving for 6 years and genuinely love making rides smooth and stress-free.
+    My car is clean, I drive calmly, and I respect your space — whether you want to chat or just chill.
+    Sit back and enjoy the ride! 😊
+  </div>
+</div>
+```
+
+  </div>
+
+  <!-- ════════════ RULES ════════════ -->
+
+  <div class="panel" id="panel-rules">
+    <div class="sec">Passenger Guidelines</div>
+    <div class="rules-grid">
+      <div class="rule"><div class="rule-ico ico-r">🚭</div><div><div class="rule-t">No Smoking</div><div class="rule-d">No smoking, vaping, or e-cigarettes at any time inside the vehicle.</div></div></div>
+      <div class="rule"><div class="rule-ico ico-b">🎵</div><div><div class="rule-t">Respectful Volume</div><div class="rule-d">Keep calls and media at a considerate level. Headphones are appreciated.</div></div></div>
+      <div class="rule"><div class="rule-ico ico-y">🍔</div><div><div class="rule-t">Light Snacks Only</div><div class="rule-d">Avoid messy or strong-smelling food. Light, clean snacks are okay.</div></div></div>
+      <div class="rule"><div class="rule-ico ico-g">🐾</div><div><div class="rule-t">Pets in Carrier</div><div class="rule-d">Pets must be in a carrier unless confirmed otherwise with your driver.</div></div></div>
+      <div class="rule"><div class="rule-ico ico-y">💬</div><div><div class="rule-t">Be Kind & Respectful</div><div class="rule-d">Treat your driver with respect. Harassment will be reported immediately.</div></div></div>
+      <div class="rule"><div class="rule-ico ico-b">🚗</div><div><div class="rule-t">Seatbelt Always On</div><div class="rule-d">Buckle up for every ride — it's the law and keeps everyone safe.</div></div></div>
+      <div class="rule"><div class="rule-ico ico-r">🗑️</div><div><div class="rule-t">No Littering</div><div class="rule-d">Please take your trash with you or use the bag provided in the vehicle.</div></div></div>
+      <div class="rule"><div class="rule-ico ico-g">⏰</div><div><div class="rule-t">Be Ready on Time</div><div class="rule-d">Driver waits up to 5 minutes. Additional wait may incur a small fee.</div></div></div>
+    </div>
+    <div class="thank-box">
+      <div class="big">🙏</div>
+      <h3>Thank you for being a great passenger!</h3>
+      <p>A respectful, clean ride makes the journey better for everyone.<br>We appreciate you choosing RideWith.</p>
+    </div>
+  </div>
+
+  <!-- ════════════ QUIZ ════════════ -->
+
+  <div class="panel" id="panel-quiz">
+
+```
+<!-- SETUP -->
+<div class="quiz-setup" id="quiz-setup">
+  <div class="card">
+    <h2>🎮 AI Trivia</h2>
+    <p>Powered by AI — new questions every time, never repeating. Pick your vibe and play!</p>
+
+    <div class="pick-label">Choose a Category</div>
+    <div class="cat-grid">
+      <div class="cat-btn" onclick="pickCat(this,'General Knowledge')"><span class="cat-ico">🌍</span>General</div>
+      <div class="cat-btn" onclick="pickCat(this,'Science & Nature')"><span class="cat-ico">🔬</span>Science</div>
+      <div class="cat-btn" onclick="pickCat(this,'History')"><span class="cat-ico">📜</span>History</div>
+      <div class="cat-btn" onclick="pickCat(this,'Sports')"><span class="cat-ico">⚽</span>Sports</div>
+      <div class="cat-btn" onclick="pickCat(this,'Movies & TV')"><span class="cat-ico">🎬</span>Movies & TV</div>
+      <div class="cat-btn" onclick="pickCat(this,'Music')"><span class="cat-ico">🎵</span>Music</div>
+      <div class="cat-btn" onclick="pickCat(this,'Food & Cuisine')"><span class="cat-ico">🍕</span>Food</div>
+      <div class="cat-btn" onclick="pickCat(this,'Geography')"><span class="cat-ico">🗺️</span>Geography</div>
+      <div class="cat-btn" onclick="pickCat(this,'Technology')"><span class="cat-ico">💻</span>Tech</div>
+    </div>
+
+    <div class="pick-label">Choose Difficulty</div>
+    <div class="diff-row">
+      <div class="diff-btn" onclick="pickDiff(this,'Easy')">😊 Easy</div>
+      <div class="diff-btn" onclick="pickDiff(this,'Medium')">🤔 Medium</div>
+      <div class="diff-btn" onclick="pickDiff(this,'Hard')">🔥 Hard</div>
+    </div>
+
+    <button class="start-btn" id="start-btn" onclick="startQuiz()" disabled>Select category & difficulty to start →</button>
+  </div>
+</div>
+
+<!-- GAME -->
+<div class="quiz-game" id="quiz-game">
+  <div class="quiz-meta">
+    <div class="qm-cat" id="qm-cat">🌍 General</div>
+    <div class="qm-score">Score <span id="score-disp">0</span></div>
+  </div>
+
+  <div class="q-card" id="q-card">
+    <div class="loading-box" id="q-loading">
+      <div class="spin"></div>
+      <p>Generating your question…</p>
+    </div>
+    <div id="q-content" style="display:none;">
+      <div class="q-num" id="q-num">Question 1</div>
+      <div class="q-text" id="q-text"></div>
+      <div class="opts" id="q-opts"></div>
+      <div class="q-feedback" id="q-fb"></div>
+      <div class="q-actions">
+        <button class="q-reset" onclick="backToSetup()">← Change category</button>
+        <button class="q-next" id="q-next" onclick="loadAIQuestion()" style="display:none;">Next question →</button>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+  </div>
+
+  <!-- ════════════ APPRECIATION ════════════ -->
+
+  <div class="panel" id="panel-tip">
+
+```
+<!-- FIVE STARS CARD -->
+<div class="card" style="text-align:center; border-color:rgba(245,197,24,.2); background:linear-gradient(135deg,rgba(245,197,24,.07),rgba(0,229,160,.04)); margin-bottom:12px;">
+  <div style="font-size:38px; margin-bottom:12px;">⭐</div>
+  <div style="font-family:'Syne',sans-serif; font-size:19px; font-weight:800; color:var(--gold); margin-bottom:10px;">
+    Was Your Journey Satisfactory?
+  </div>
+  <div style="font-size:14px; color:var(--muted); line-height:1.8; max-width:480px; margin:0 auto 20px; font-style:italic;">
+    "A pleasant journey is the result of effort on both sides. Thank you for your respect and patience. If our service met your expectations, a 5-star rating on the app is one of the most meaningful ways to show your appreciation."
+  </div>
+  <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); padding:16px 20px; max-width:380px; margin:0 auto;">
+    <div style="font-family:'Syne',sans-serif; font-size:12px; font-weight:700; color:var(--muted); letter-spacing:2px; text-transform:uppercase; margin-bottom:10px;">How to Leave a Rating</div>
+    <div style="display:flex; flex-direction:column; gap:8px; text-align:left;">
+      <div style="display:flex; align-items:center; gap:10px; font-size:13px;">
+        <span style="background:rgba(0,229,160,.12); border:1px solid rgba(0,229,160,.25); color:var(--accent); border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; font-weight:700; flex-shrink:0; font-size:12px;">1</span>
+        Open your Uber or Lyft app
+      </div>
+      <div style="display:flex; align-items:center; gap:10px; font-size:13px;">
+        <span style="background:rgba(0,229,160,.12); border:1px solid rgba(0,229,160,.25); color:var(--accent); border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; font-weight:700; flex-shrink:0; font-size:12px;">2</span>
+        Go to your recent trip
+      </div>
+      <div style="display:flex; align-items:center; gap:10px; font-size:13px;">
+        <span style="background:rgba(0,229,160,.12); border:1px solid rgba(0,229,160,.25); color:var(--accent); border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; font-weight:700; flex-shrink:0; font-size:12px;">3</span>
+        Tap <strong style="color:var(--gold);">★★★★★</strong> — 5 stars for your driver
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GRATUITY CARD -->
+<div class="card" style="border-color:rgba(155,114,207,.15); background:linear-gradient(135deg,rgba(155,114,207,.06),rgba(0,180,255,.04));">
+  <div style="display:flex; gap:14px; align-items:flex-start;">
+    <div style="font-size:30px; flex-shrink:0; margin-top:2px;">🙏</div>
+    <div>
+      <div style="font-family:'Syne',sans-serif; font-size:15px; font-weight:800; margin-bottom:10px; color:var(--text);">
+        A Note on Gratuity
+      </div>
+      <div style="font-size:13px; color:var(--muted); line-height:1.85; font-style:italic;">
+        "A gratuity, while never required, contributes directly to the upkeep of this vehicle so we may continue offering every passenger a clean and comfortable experience."
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- THANK YOU CARD -->
+<div class="thank-box">
+  <div class="big">🤝</div>
+  <h3>Thank You for Riding With Us</h3>
+  <p>Your trust and patronage are deeply appreciated.<br>We hope to serve you again on your next journey.</p>
+</div>
+```
+
+  </div>
+
+</div><!-- /wrap -->
+
+<script>
+// ── CLOCK ──
+function tick() {
+  const n=new Date(), h=n.getHours()%12||12, m=n.getMinutes().toString().padStart(2,'0');
+  document.getElementById('clock').textContent=`${h}:${m} ${n.getHours()>=12?'PM':'AM'}`;
+}
+tick(); setInterval(tick,1000);
+
+// ── TABS ──
+function showTab(name,el){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  el.classList.add('active');
+}
+
+// ── TIP ──
+let selTipBtn=null;
+function pickTip(btn,amt){
+  if(selTipBtn) selTipBtn.classList.remove('sel');
+  btn.classList.add('sel'); selTipBtn=btn;
+  showThanks();
+}
+function sendCustomTip(){
+  const v=document.getElementById('tip-inp').value;
+  if(!v||v<0.5) return;
+  document.getElementById('tip-inp').value='';
+  showThanks();
+}
+function showThanks(){
+  const t=document.getElementById('tip-thanks');
+  t.style.display='block';
+  setTimeout(()=>t.style.display='none',4500);
+}
+
+// ── RATING ──
+const rlabels=['','Poor 😕','Fair 😐','Good 🙂','Great 😊','Amazing! 🤩'];
+function setRating(r){
+  document.querySelectorAll('.s-star').forEach((s,i)=>{
+    s.textContent=i<r?'★':'☆'; s.classList.toggle('on',i<r);
+  });
+  document.getElementById('rating-lbl').textContent=rlabels[r];
+}
+
+// ── QUIZ STATE ──
+let chosenCat='', chosenDiff='', qCount=0, score=0, answered=false;
+
+function pickCat(el,cat){
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel'); chosenCat=cat; checkReady();
+}
+function pickDiff(el,diff){
+  document.querySelectorAll('.diff-btn').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel'); chosenDiff=diff; checkReady();
+}
+function checkReady(){
+  const btn=document.getElementById('start-btn');
+  btn.disabled=!(chosenCat&&chosenDiff);
+  if(!btn.disabled) btn.textContent='Start Quiz →';
+}
+
+function startQuiz(){
+  qCount=0; score=0;
+  document.getElementById('score-disp').textContent='0';
+  document.getElementById('qm-cat').textContent=catIcon(chosenCat)+' '+chosenCat;
+  document.getElementById('quiz-setup').style.display='none';
+  document.getElementById('quiz-game').classList.add('active');
+  loadAIQuestion();
+}
+
+function backToSetup(){
+  document.getElementById('quiz-game').classList.remove('active');
+  document.getElementById('quiz-setup').style.display='block';
+}
+
+function catIcon(c){
+  const m={'General Knowledge':'🌍','Science & Nature':'🔬','History':'📜','Sports':'⚽','Movies & TV':'🎬','Music':'🎵','Food & Cuisine':'🍕','Geography':'🗺️','Technology':'💻'};
+  return m[c]||'🎯';
+}
+
+// ── AI QUESTION LOADER ──
+async function loadAIQuestion(){
+  answered=false;
+  qCount++;
+  document.getElementById('q-num').textContent=`Question ${qCount}`;
+  document.getElementById('q-loading').style.display='block';
+  document.getElementById('q-content').style.display='none';
+  document.getElementById('q-next').style.display='none';
+  document.getElementById('q-fb').textContent='';
+  document.getElementById('q-fb').className='q-feedback';
+
+  const prompt=`Generate a single trivia question for a rideshare passenger quiz.
+Category: ${chosenCat}
+Difficulty: ${chosenDiff}
+Question number: ${qCount} (make each question unique and different)
+
+Respond ONLY with a valid JSON object in this exact format, no markdown, no extra text:
+{
+  "question": "The question text here?",
+  "options": ["Option A", "Option B", "Option C", "Option D"],
+  "answer": 0,
+  "fact": "A short interesting fun fact about the answer (1-2 sentences)."
+}
+
+The "answer" field is the 0-based index of the correct option in the options array.
+Make the options plausible but only one correct. Keep the question engaging and fun.`;
+
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        model:"claude-sonnet-4-20250514",
+        max_tokens:400,
+        messages:[{role:"user",content:prompt}]
+      })
+    });
+    const data=await res.json();
+    const raw=data.content.map(b=>b.text||'').join('');
+    const clean=raw.replace(/```json|```/g,'').trim();
+    const q=JSON.parse(clean);
+    renderQuestion(q);
+  } catch(e) {
+    document.getElementById('q-loading').style.display='none';
+    document.getElementById('q-content').style.display='block';
+    document.getElementById('q-text').textContent='⚠️ Could not load question. Check your WiFi connection and try again.';
+    document.getElementById('q-opts').innerHTML='';
+    document.getElementById('q-next').style.display='inline-block';
+    document.getElementById('q-next').textContent='Try Again →';
+  }
+}
+
+function renderQuestion(q){
+  document.getElementById('q-loading').style.display='none';
+  document.getElementById('q-content').style.display='block';
+  document.getElementById('q-text').textContent=q.question;
+
+  const optsEl=document.getElementById('q-opts');
+  optsEl.innerHTML='';
+  q.options.forEach((opt,i)=>{
+    const btn=document.createElement('button');
+    btn.className='opt';
+    btn.textContent=opt;
+    btn.onclick=()=>checkAns(i,q.answer,q.fact,q.options.length);
+    optsEl.appendChild(btn);
+  });
+}
+
+function checkAns(chosen,correct,fact,total){
+  if(answered) return;
+  answered=true;
+  const btns=document.querySelectorAll('.opt');
+  btns.forEach((b,i)=>{
+    b.disabled=true;
+    if(i===correct) b.classList.add('correct');
+    else if(i===chosen) b.classList.add('wrong');
+  });
+  const fb=document.getElementById('q-fb');
+  if(chosen===correct){
+    score++;
+    document.getElementById('score-disp').textContent=score;
+    fb.className='q-feedback good';
+    fb.textContent='✅ Correct! '+fact;
+  } else {
+    fb.className='q-feedback bad';
+    fb.textContent='❌ Not quite. '+fact;
+  }
+  const nxt=document.getElementById('q-next');
+  nxt.style.display='inline-block';
+  nxt.textContent='Next question →';
+}
+</script>
+
+</body>
+</html>
